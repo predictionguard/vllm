@@ -1,4 +1,5 @@
-FROM vault.habana.ai/gaudi-docker/1.19.1/ubuntu22.04/habanalabs/pytorch-installer-2.5.1:latest
+#FROM vault.habana.ai/gaudi-docker/1.19.1/ubuntu22.04/habanalabs/pytorch-installer-2.5.1:latest
+FROM vault.habana.ai/gaudi-docker/1.19.2/ubuntu24.04/habanalabs/pytorch-installer-2.5.1:1.19.2-32-20250324
 
 COPY ./ /workspace/vllm
 
