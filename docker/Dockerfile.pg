@@ -1,0 +1,4 @@
+FROM vllm/vllm-openai:v0.10.2
+
+COPY examples/tool_chat_template_hermes.jinja /vllm-workspace/examples/tool_chat_template_hermes.jinja
+

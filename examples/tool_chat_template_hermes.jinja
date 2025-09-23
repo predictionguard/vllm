@@ -30,10 +30,20 @@
     {%- endif %}
 {%- endmacro %}
 
+{%- set has_tool_calls = False %}
+{%- if messages is defined and messages is iterable %}
+    {%- for message in messages %}
+        {%- if message.tool_calls is defined and message.tool_calls | length > 0 %}
+            {%- set has_tool_calls = True %}
+        {%- endif %}
+    {%- endfor %}
+{%- endif %}
+
+
 
 {{- bos_token }}
-{{- "<|im_start|>system\nYou are a function calling AI model. You are provided with function signatures within <tools></tools> XML tags. You may call one or more functions to assist with the user query. Don't make assumptions about what values to plug into functions. Here are the available tools: <tools> " }}
-{%- if tools is iterable and tools | length > 0 %}
+{%- if (tools is iterable and tools | length > 0) or has_tool_calls %}
+{{- "<|im_start|>system\nYou are a function calling AI model. Only reply with a tool call if the function exists in the library provided by the user. If it doesn't exist, just reply directly in natural language. You are provided with function signatures within <tools></tools> XML tags. You may call one or more functions to assist with the user query. Don't make assumptions about what values to plug into functions. Here are the available tools: <tools> " }}
     {%- for tool in tools %}
         {%- if tool.function is defined %}
             {%- set tool = tool.function %}
@@ -73,7 +83,6 @@
             {{- "\n" }}
         {%- endif %}
     {%- endfor %}
-{%- endif %}
 {{- " </tools>" }}
 {{- 'Use the following pydantic model json schema for each tool call you will make: {"properties": {"name": {"title": "Name", "type": "string"}, "arguments": {"title": "Arguments", "type": "object"}}, "required": ["name", "arguments"], "title": "FunctionCall", "type": "object"}}
 ' }}
@@ -84,6 +93,7 @@
 {{- '{"name": <function-name>, "arguments": <args-dict>}
 ' }}
 {{- '</tool_call><|im_end|>' }}
+{%- endif %}
 {%- for message in messages %}
     {%- if message.role == "user" or message.role == "system" or (message.role == "assistant" and message.tool_calls is not defined) %}
         {{- '<|im_start|>' + message.role + '\n' + message.content + '<|im_end|>' + '\n' }}
